@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { createContext, useState, useContext, useEffect, ReactNode, useCallback } from 'react';
@@ -57,18 +58,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const fetchOrCreateUser = useCallback(async (currentAuthUser: import("firebase/auth").User) => {
     setLoading(true);
-    let userProfile = await getUserById(currentAuthUser.uid);
-    if (!userProfile) {
-      userProfile = await createNewUser(currentAuthUser);
-    } else {
-      const today = new Date().toISOString().split('T')[0];
-      if (userProfile.lastSpinDate !== today) {
-          userProfile.dailySpins = 0;
-      }
+    try {
+        let userProfile = await getUserById(currentAuthUser.uid);
+        if (!userProfile) {
+          userProfile = await createNewUser(currentAuthUser);
+        } else {
+          const today = new Date().toISOString().split('T')[0];
+          if (userProfile.lastSpinDate !== today) {
+              userProfile.dailySpins = 0;
+          }
+        }
+        setAppUser(userProfile);
+    } catch(error) {
+        toast({
+            title: "Authentication Error",
+            description: "Could not load your user profile. Please try logging in again.",
+            variant: "destructive",
+        });
+        signOut(auth); // Sign out the user as they can't proceed
+        setAppUser(null);
+    } finally {
+        setLoading(false);
     }
-    setAppUser(userProfile);
-    setLoading(false);
-  }, []);
+  }, [auth, toast]);
 
   useEffect(() => {
     if (!isAuthLoading) {

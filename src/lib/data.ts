@@ -1,3 +1,4 @@
+
 "use client";
 
 import { 
@@ -56,12 +57,24 @@ const generateUniqueReferralCode = async (name: string): Promise<string> => {
 export const getUserById = async (userId: string): Promise<User | null> => {
   const db = getFirestore();
   const userRef = doc(db, "users", userId);
-  const userSnap = await getDoc(userRef);
+  try {
+    const userSnap = await getDoc(userRef);
 
-  if (userSnap.exists()) {
-    return userSnap.data() as User;
-  } else {
-    return null;
+    if (userSnap.exists()) {
+      return userSnap.data() as User;
+    } else {
+      return null;
+    }
+  } catch (error) {
+    if (error instanceof Error && (error as any).code === 'permission-denied') {
+        const permissionError = new FirestorePermissionError({
+            path: userRef.path,
+            operation: 'get',
+        });
+        errorEmitter.emit('permission-error', permissionError);
+        throw permissionError;
+    }
+    throw error;
   }
 };
 
@@ -153,7 +166,7 @@ export const addPointsAndLogTransaction = async (userId: string, points: number)
       transaction.set(spinDocRef, {...newSpin, spinTime: serverTimestamp()});
     });
   } catch (error) {
-    if (error instanceof Error && (error.name === 'FirebaseError' && (error as any).code === 'permission-denied')) {
+    if (error instanceof Error && (error as any).code === 'permission-denied') {
         errorEmitter.emit('permission-error', new FirestorePermissionError({
             path: userRef.path,
             operation: 'write',
