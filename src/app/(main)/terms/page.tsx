@@ -8,10 +8,10 @@ import { useEffect, useState } from 'react';
 
 export default function TermsPage() {
   const router = useRouter();
-  const [lastUpdated, setLastUpdated] = useState('');
+  const [lastUpdated, setLastUpdated] = useState<string | null>(null);
 
   useEffect(() => {
-    setLastUpdated(new Date().toLocaleDateString());
+    setLastUpdated(new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }));
   }, []);
 
   return (
@@ -30,7 +30,7 @@ export default function TermsPage() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4 text-sm text-muted-foreground">
-          <p><strong>Last updated:</strong> {lastUpdated}</p>
+          <p><strong>Last updated:</strong> {lastUpdated || '...'}</p>
           
           <h2 className="font-bold text-foreground pt-2">1. Introduction</h2>
           <p>Welcome to SpinWin Rewards ("App", "we", "us", "our"). By using our App, you agree to be bound by these Terms and Conditions ("Terms"). If you do not agree to these Terms, do not use the App.</p>
