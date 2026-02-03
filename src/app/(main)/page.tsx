@@ -1,6 +1,7 @@
-// This page is now a placeholder.
-// The redirect logic has been moved to src/app/page.tsx
-// to resolve a Vercel build issue.
+import { redirect } from 'next/navigation';
+
+// To resolve a recurring Vercel build error, this page now explicitly
+// redirects to the /earn page. This removes routing ambiguity.
 export default function MainPage() {
-  return null;
+  redirect('/earn');
 }
