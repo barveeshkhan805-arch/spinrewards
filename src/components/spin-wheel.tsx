@@ -54,7 +54,10 @@ export function SpinWheel({ onSpinComplete, onSpinStartCheck }: SpinWheelProps) 
 
     setTimeout(() => {
       const finalAngle = newRotation % 360;
-      // Pointer is at the top (270deg), so we calculate the winning angle relative to that.
+      
+      // Corrected Calculation:
+      // The pointer is at the top (270 degrees). As the wheel spins clockwise (positive rotation),
+      // the slice that lands under the pointer is the one that was originally at angle (270 - finalAngle).
       const winningAngle = (270 - finalAngle + 360) % 360;
       const winningSliceIndex = Math.floor(winningAngle / sliceAngle);
       const winningValue = slices[winningSliceIndex].value;
