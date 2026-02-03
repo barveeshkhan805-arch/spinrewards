@@ -1,10 +1,11 @@
-import MainPage from './(main)/page';
+import { redirect } from 'next/navigation';
 
 /**
- * This file re-exports the page from the (main) route group.
- * This pattern is used to include a page in the root of the app
- * while still keeping it within a route group for layout purposes.
- * It resolves build conflicts that can arise from having multiple
- * pages at the same route.
+ * This page is the single entry point for the root URL ('/').
+ * It immediately redirects the user to the '/earn' page.
+ * This approach resolves a recurring Vercel build error caused by
+ * ambiguous routing between this file and the (main) route group.
  */
-export default MainPage;
+export default function RootPage() {
+  redirect('/earn');
+}
