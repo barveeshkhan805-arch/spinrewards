@@ -1,9 +1,10 @@
-import { redirect } from 'next/navigation';
+import MainPage from './(main)/page';
 
-// This page is a server component that automatically redirects to the /earn page.
-// This avoids client-side rendering for a simple redirect and resolves build issues.
-export default function Home() {
-  redirect('/earn');
-  // Since redirect() throws an error, this component will not return anything.
-  // This is the expected behavior for server-side redirects.
-}
+/**
+ * This file re-exports the page from the (main) route group.
+ * This pattern is used to include a page in the root of the app
+ * while still keeping it within a route group for layout purposes.
+ * It resolves build conflicts that can arise from having multiple
+ * pages at the same route.
+ */
+export default MainPage;
