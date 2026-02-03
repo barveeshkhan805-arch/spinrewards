@@ -21,10 +21,10 @@ import { errorEmitter } from "@/firebase/error-emitter";
 import { FirestorePermissionError } from "@/firebase/errors";
 
 export const withdrawalTiers: WithdrawalTier[] = [
-  { id: 1, rs: 10, points: 1200 },
-  { id: 2, rs: 25, points: 2600 },
-  { id: 3, rs: 50, points: 5200 },
-  { id: 4, rs: 100, points: 10600 },
+  { id: 1, rs: 10, points: 1800 },
+  { id: 2, rs: 25, points: 3600 },
+  { id: 3, rs: 50, points: 5800 },
+  { id: 4, rs: 100, points: 11500 },
 ];
 
 const generateUniqueReferralCode = async (name: string): Promise<string> => {
