@@ -1,7 +1,7 @@
-import { redirect } from 'next/navigation';
+'use client';
 
-// To resolve a recurring Vercel build error, this page now explicitly
-// redirects to the /earn page. This removes routing ambiguity.
+// This page is a placeholder to resolve a Vercel build issue.
+// The root traffic is handled by src/app/page.tsx, which redirects to /earn.
 export default function MainPage() {
-  redirect('/earn');
+  return null;
 }
