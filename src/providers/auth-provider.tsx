@@ -2,7 +2,7 @@
 "use client";
 
 import React, { createContext, useState, useContext, useEffect, ReactNode, useCallback } from 'react';
-import { GoogleAuthProvider, signInWithRedirect, getRedirectResult, signOut, type AuthError } from "firebase/auth";
+import { GoogleAuthProvider, signInWithRedirect, getRedirectResult, signOut, type AuthUser, type AuthError } from "firebase/auth";
 import { useUser, useAuth as useFirebaseAuth } from '@/firebase';
 import type { User } from '@/lib/types';
 import { getUserById, createNewUser, addPointsAndLogTransaction, updateUserProfile } from '@/lib/data';
@@ -24,15 +24,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const { user: firebaseUser, isUserLoading: isAuthLoading } = useUser();
   const auth = useFirebaseAuth();
   const [appUser, setAppUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [isAppUserLoading, setAppUserLoading] = useState(true);
+  const [isRedirectProcessing, setRedirectProcessing] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
-    const checkRedirectResult = async () => {
+    // This effect only runs once on initial load to handle the redirect result.
+    const processRedirect = async () => {
       try {
-        setLoading(true);
         const result = await getRedirectResult(auth);
         if (result) {
+          // A successful sign-in just happened.
+          // The onAuthStateChanged listener will handle fetching/creating the user.
           toast({
             title: "Signed In Successfully",
             description: `Welcome back, ${result.user.displayName}!`,
@@ -47,17 +50,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           variant: "destructive",
         });
       } finally {
-        // The main user loading logic will take over from here.
+        // Whether it succeeded, failed, or was not a redirect,
+        // we are done processing it.
+        setRedirectProcessing(false);
       }
     };
     
     if (auth) {
-      checkRedirectResult();
+      processRedirect();
     }
   }, [auth, toast]);
 
-  const fetchOrCreateUser = useCallback(async (currentAuthUser: import("firebase/auth").User) => {
-    setLoading(true);
+  const fetchOrCreateUser = useCallback(async (currentAuthUser: AuthUser) => {
+    setAppUserLoading(true);
     try {
         let userProfile = await getUserById(currentAuthUser.uid);
         if (!userProfile) {
@@ -70,6 +75,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
         setAppUser(userProfile);
     } catch(error) {
+        console.error("Error fetching/creating user profile:", error);
         toast({
             title: "Authentication Error",
             description: "Could not load your user profile. Please try logging in again.",
@@ -78,24 +84,30 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         signOut(auth); // Sign out the user as they can't proceed
         setAppUser(null);
     } finally {
-        setLoading(false);
+        setAppUserLoading(false);
     }
   }, [auth, toast]);
 
   useEffect(() => {
-    if (!isAuthLoading) {
-      if (firebaseUser) {
-        fetchOrCreateUser(firebaseUser);
-      } else {
-        setAppUser(null);
-        setLoading(false);
-      }
+    // This effect responds to changes in Firebase auth state, but waits for
+    // the redirect processing to finish.
+    if (isRedirectProcessing || isAuthLoading) {
+      return;
     }
-  }, [firebaseUser, isAuthLoading, fetchOrCreateUser]);
+
+    if (firebaseUser) {
+      if (!appUser || appUser.id !== firebaseUser.uid) {
+         fetchOrCreateUser(firebaseUser);
+      }
+    } else {
+      setAppUser(null);
+      setAppUserLoading(false);
+    }
+  }, [firebaseUser, isAuthLoading, isRedirectProcessing, fetchOrCreateUser, appUser]);
 
   const login = async (): Promise<void> => {
     const provider = new GoogleAuthProvider();
-    setLoading(true);
+    // Don't set loading here, the redirect will reload the app anyway
     await signInWithRedirect(auth, provider);
   };
 
@@ -151,7 +163,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   
   const value = { 
       user: appUser, 
-      loading: loading || isAuthLoading, 
+      loading: isAuthLoading || isAppUserLoading || isRedirectProcessing, 
       login, 
       logout, 
       updateUser, 
