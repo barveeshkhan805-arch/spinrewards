@@ -1,7 +1,11 @@
-// This page is a placeholder to resolve a Vercel build issue.
-// By being a server component that returns null, it avoids creating a
-// client-side entry point that conflicts with the main `src/app/page.tsx`.
-// The root traffic is handled by `src/app/page.tsx`, which redirects to /earn.
+import { redirect } from 'next/navigation';
+
+/**
+ * This page is the single entry point for the root URL ('/').
+ * It immediately redirects the user to the '/earn' page.
+ * This approach resolves a recurring Vercel build error caused by
+ * ambiguous routing.
+ */
 export default function MainPage() {
-  return null;
+  redirect('/earn');
 }

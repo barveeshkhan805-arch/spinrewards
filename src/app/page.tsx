@@ -1,11 +1,5 @@
-import { redirect } from 'next/navigation';
-
-/**
- * This page is the single entry point for the root URL ('/').
- * It immediately redirects the user to the '/earn' page.
- * This approach resolves a recurring Vercel build error caused by
- * ambiguous routing between this file and the (main) route group.
- */
+// This page is a placeholder to resolve a Vercel build issue.
+// The root traffic is handled by `src/app/(main)/page.tsx`, which redirects to /earn.
 export default function RootPage() {
-  redirect('/earn');
+  return null;
 }
